@@ -1,11 +1,17 @@
-CFLAGS := gcc -Wall -Wextra -nostdlib -fno-stack-protector -I./bootmgr/inc --entry start -m32 -fno-builtin -O1
+CFLAGS := gcc -Wall -Wextra -nostdlib -fpic -ffreestanding -fno-stack-protector \
+ 			-fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args -I./inc \
+ 			--entry start -m32 -fno-builtin -O1
 
-SRCFILES := ./bootmgr/src/bootmgr.c
-BINFILE := ./bootmgr/bin/bootmgr.bin
+DRVSRCFILES := ./drivers/src/ahci.c
+DRVBINFILE := ./drivers/bin/ahci.bin
 
-gcc:
-	$(CFLAGS) $(SRCFILES) -o $(BINFILE)
-	objcopy --only-section=.text --only-section=.data --only-section=.bss -O binary $(BINFILE)
+driver: driverbuild driverwrite
+
+driverbuild:
+	$(CFLAGS) $(DRVSRCFILES) -o $(DRVBINFILE)
+	objcopy --only-section=.text --only-section=.data --only-section=.bss -O binary $(DRVBINFILE)
+driverwrite:
+	dd $(DRVBINFILE) ./test/disc.vhd 204800 4
 
 efibuild:
 	gcc -Ignu-efi/inc -fpic -ffreestanding -fno-stack-protector -fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args -e efi_main -c ./efi/src/main.c -o ./efi/obj/main.o
