@@ -18,7 +18,7 @@ efibuild:
 	ld -shared -Bsymbolic -Lgnu-efi/x86_64/lib -Lgnu-efi/x86_64/gnuefi -Tgnu-efi/gnuefi/elf_x86_64_efi.lds gnu-efi/x86_64/gnuefi/crt0-efi-x86_64.o ./efi/obj/main.o -o ./efi/obj/main.so -lgnuefi -lefi
 	objcopy -j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym  -j .rel -j .rela -j .rel.* -j .rela.* -j .reloc --target efi-app-x86_64 --subsystem=10 ./efi/obj/main.so ./efi/bin/BOOTX64.efi
 
-run:
+run-efi:
 	qemu-system-x86_64 -display sdl -monitor stdio -cpu max -m 8G \
   	-drive if=pflash,format=raw,unit=0,file=./test/OVMF_CODE.fd,readonly=on \
   	-drive if=pflash,format=raw,unit=1,file=./test/OVMF_VARS.fd \
@@ -26,7 +26,18 @@ run:
 	-device ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0 \
 	-net none
 
-build:
-	nasm -f bin ./bootmgr/src/setup.asm -o ./bootmgr/bin/setup.bin
+run-bios:
+	qemu-system-x86_64 -display sdl -monitor stdio -cpu max -m 8G \
+	-drive id=disk,file=./test/bios.vhd,if=none,format=raw \
+	-device ahci,id=ahci -device ide-hd,drive=disk,bus=ahci.0 \
+	-net none
 
-asm: build write run
+drive:
+	qemu-img create -f raw ./test/bios.vhd 2G
+
+build:
+	nasm -f bin ./bios/src/setup.asm -o ./bios/bin/setup.bin
+write:
+	dd ./bios/bin/setup.bin ./test/bios.vhd 0 1
+
+asm: build write run-bios
