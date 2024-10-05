@@ -1,2 +1,4 @@
 *.vhd
 /gnu-efi
+/limine
+/.vscode
