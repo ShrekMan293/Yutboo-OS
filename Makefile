@@ -1,4 +1,6 @@
-CFLAGS := gcc -Wall -Wextra -nostdlib -fno-stack-protector -I./bootmgr/inc --entry start -m32 -fno-builtin -O1
+CFLAGS := gcc -Wall -Wextra -nostdlib -fpic -ffreestanding -fno-stack-protector \
+ 			-fno-stack-check -fshort-wchar -mno-red-zone -maccumulate-outgoing-args -I./inc \
+ 			--entry start -m32 -fno-builtin -O1
 
 SRCFILES := ./bootmgr/src/bootmgr.c
 BINFILE := ./bootmgr/bin/bootmgr.bin
