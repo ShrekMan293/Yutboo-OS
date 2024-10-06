@@ -1,29 +1,29 @@
-/* Set the format as ELF64 */
+/* Set our output format */
 OUTPUT_FORMAT(elf64-x86-64)
 
-/* Set entry main */
-ENTRY(setup)
+/* Set Entry point */
+ENTRY(drvmain)
 
-/* Define program headers */
-PHDRS 
+/* Define Program Headers */
+PHDRS
 {
-    requests PT_LOAD;
+    init PT_LOAD;
     text PT_LOAD;
+    panic PT_LOAD;
+    repair PT_LOAD;
     rodata PT_LOAD;
     data PT_LOAD;
 }
 
 SECTIONS
 {
-    . = 0xffffffff80000000;
+    . = 0x1000;
 
-    /* Define a section to contain the Limine requests */
-    .requests : {
-        KEEP(*
-        (.requests_start_marker))
-        KEEP(*(.requests))
-        KEEP(*(.requests_end_marker))
-    } :requests
+    /* Define a section to contain the initialization */
+    .init : {
+        KEEP(*(.magic_number))
+        *(.init .init.*)
+    } :init
 
     /* Move to the next memory page */
     . = ALIGN(CONSTANT(MAXPAGESIZE));
@@ -35,12 +35,23 @@ SECTIONS
     /* Move to the next memory page */
     . = ALIGN(CONSTANT(MAXPAGESIZE));
 
-    .rodata : {
-        *(.rodata .rodata.*)
-    } :rodata
+    .panic : {
+        *(.panic .panic.*)
+    } :panic
 
     /* Move to the next memory page */
     . = ALIGN(CONSTANT(MAXPAGESIZE));
+
+    .repair : {
+        *(.repair .repair.*)
+    } :repair
+
+    /* Move to the next memory page */
+    . = ALIGN(CONSTANT(MAXPAGESIZE));
+
+    .rodata : {
+        *(.rodata .rodata.*)
+    } :rodata
 
     .data : {
         *(.data .data.*)
