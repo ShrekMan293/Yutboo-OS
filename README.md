@@ -1,4 +1,4 @@
-# Yutboo-OS
+# Yutboo-Linux
 
 Links:
 https://github.com/minoca/os/tree/master/boot
